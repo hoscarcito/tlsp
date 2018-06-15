@@ -146,8 +146,5 @@ compiler = input => {
 }
 
 module.exports = {
-  tokenizer,
-  parser,
-  emitter,
   compiler
 };

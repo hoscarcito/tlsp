@@ -1,4 +1,4 @@
-const { tokenizer, parser, emitter } = require('./compiler.js');
+const { compiler } = require('./compiler.js');
 
 const string = `
   (print "hello world")(add 2)
