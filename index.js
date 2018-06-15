@@ -1,6 +1,9 @@
-const { tokenizer, parseToken } = require('./compiler.js');
+const { tokenizer, parseToken, emitter } = require('./compiler.js');
 
-const string = '(coso 2 (add 23 3))';
-const tokens = tokenizer('(coso 2 (add 23 3))');
+const string = `
+  (print "hello world")(add 2)
+  (subtract 4 2)`;
+const tokens = tokenizer(string);
 const parsedTokens = parseToken(tokens);
-console.log(parsedTokens);
+const emitedTokens = emitter(parsedTokens);
+console.log(JSON.stringify(emitedTokens));

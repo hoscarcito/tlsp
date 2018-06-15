@@ -1,26 +1,4 @@
 
-tokenizer = (input) => {
-  let current = 0;
-  let tokens = [];
-  while (current < input.length) {
-    let tokenized = false;
-    tokenizers.forEach((tokenizer) => {
-      if (tokenized) return;
-      let [consumedChars, token] = tokenizer(input, current);
-      if (consumedChars !== 0) {
-        tokenized = true;
-        current += consumedChars;
-      }
-      if (token) {
-        tokens.push(token);
-      }
-    });
-    if (!tokenized) {
-      throw new TypeError('I dont know what this character is: ' + input[current]);
-    }
-  }
-  return tokens;
-}
 
 const tokenizePattern = (type, pattern, input, current) => {
   let char = input[current];
@@ -58,12 +36,34 @@ const tokenizeString = (input, current) => {
 const tokenizeCharacter = (type, value, input, current) => (value === input[current]) ? [1, { type, value }] : [0, null]
 const tokenizeParOpen = (input, current) => tokenizeCharacter('paren', '(', input, current);
 const tokenizeParClose = (input, current) => tokenizeCharacter('paren', ')', input, current);
-const tokenizeNumber = (input, current) => tokenizePattern('number', /[0-9]/, input, current);
 const tokenizeName = (input, current) => tokenizePattern("name", /[a-z]/i, input, current)
+const tokenizeNumber = (input, current) => tokenizePattern('number', /[0-9]/, input, current);
 const skipWhiteSpace = (input, current) =>   (/\s/.test(input[current])) ? [1, null] : [0, null];
 
 const tokenizers = [tokenizeParOpen, tokenizeParClose, tokenizeString, tokenizeNumber, tokenizeName, skipWhiteSpace];
 
+const tokenizer = (input) => {
+  let current = 0;
+  let tokens = [];
+  while (current < input.length) {
+    let tokenized = false;
+    tokenizers.forEach((tokenizer) => {
+      if (tokenized) return;
+      let [consumedChars, token] = tokenizer(input, current);
+      if (consumedChars !== 0) {
+        tokenized = true;
+        current += consumedChars;
+      }
+      if (token) {
+        tokens.push(token);
+      }
+    });
+    if (!tokenized) {
+      throw new TypeError('I dont know what this character is: ' + input[current]);
+    }
+  }
+  return tokens;
+}
 const parseToken = (tokens) => {
   let current = 0;
   const walk = () => {
@@ -122,7 +122,23 @@ const parseToken = (tokens) => {
   return ast;
 }
 
+
+emitNumber = node => node.value;
+emitString = node => `"${node.value}"`;
+emitProgram = node =>  node.body.map(exp => emitter(exp) + ";").join('\n');
+emitExpression = node => `${node.name}(${node.params.map(emitter).join(', ')})`
+emitter = node => {
+  switch (node.type) {
+    case 'Program': return emitProgram(node);
+    case 'CallExpression': return emitExpression(node);
+    case 'StringLiteral': return emitString(node);
+    case 'NumberLiteral': return emitNumber(node);
+    default: throw new TypeError(node.type);
+  }
+}
+
 module.exports = {
   tokenizer,
-  parseToken
+  parseToken,
+  emitter
 };
