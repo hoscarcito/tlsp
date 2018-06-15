@@ -89,7 +89,7 @@ const parseToken = (tokens) => {
 
     if (token.type === 'paren' && token.value === '(') {
       token = tokens[++current]; // Ignore parentesis
-      let node = {
+      const node = {
         type: 'CallExpression',
         name: token.value,  // Token "name"
         params: [],
@@ -97,7 +97,7 @@ const parseToken = (tokens) => {
 
       token = tokens[++current]; // Next token
 
-      while ((token.type !== 'paren') || (token.type === 'paren' && token.value !== ')')) {
+      while (!(token.type === 'paren' && token.value ===')')) {
         node.params.push(walk());
         token = tokens[current]; // Because token is inside the closure and we have to take it outside
       }
@@ -110,7 +110,7 @@ const parseToken = (tokens) => {
     
   }
 
-  let ast = {
+  const ast = {
     type: 'Program',
     body: [],
   };
