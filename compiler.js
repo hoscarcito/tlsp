@@ -64,7 +64,7 @@ const tokenizer = (input) => {
   }
   return tokens;
 }
-const parseToken = (tokens) => {
+const parser = (tokens) => {
   let current = 0;
   const walk = () => {
     let token = tokens[current];
@@ -137,8 +137,17 @@ emitter = node => {
   }
 }
 
+compiler = input => {
+  const tokens = tokenizer(input);
+  const ast = parser(tokens);
+  const output = emitter(ast);
+
+  return output;
+}
+
 module.exports = {
   tokenizer,
-  parseToken,
-  emitter
+  parser,
+  emitter,
+  compiler
 };
