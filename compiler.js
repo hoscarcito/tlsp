@@ -56,15 +56,73 @@ const tokenizeString = (input, current) => {
   return [0, null]
 }
 const tokenizeCharacter = (type, value, input, current) => (value === input[current]) ? [1, { type, value }] : [0, null]
-const tokenizeParOpen = (input, current) => tokenizeCharacter('parOpen', '(', input, current);
-const tokenizeParClose = (input, current) => tokenizeCharacter('parClose', ')', input, current);
+const tokenizeParOpen = (input, current) => tokenizeCharacter('paren', '(', input, current);
+const tokenizeParClose = (input, current) => tokenizeCharacter('paren', ')', input, current);
 const tokenizeNumber = (input, current) => tokenizePattern('number', /[0-9]/, input, current);
 const tokenizeName = (input, current) => tokenizePattern("name", /[a-z]/i, input, current)
 const skipWhiteSpace = (input, current) =>   (/\s/.test(input[current])) ? [1, null] : [0, null];
 
-tokenizers = [tokenizeParOpen, tokenizeParClose, tokenizeString, tokenizeNumber, tokenizeName, skipWhiteSpace];
+const tokenizers = [tokenizeParOpen, tokenizeParClose, tokenizeString, tokenizeNumber, tokenizeName, skipWhiteSpace];
 
+const parseToken = (tokens) => {
+  let current = 0;
+  const walk = () => {
+    let token = tokens[current];
+
+    if (token.type === 'number') {
+      current++;
+
+      return {
+        type: 'NumberLiteral',
+        value: token.value,
+      };
+    }
+
+    if (token.type === 'string') {
+      current++;
+
+      return {
+        type: 'StringLiteral',
+        value: token.value,
+      };
+    }
+
+    if (token.type === 'paren' && token.value === '(') {
+      token = tokens[++current]; // Ignore parentesis
+      let node = {
+        type: 'CallExpression',
+        name: token.value,  // Token "name"
+        params: [],
+      };
+
+      token = tokens[++current]; // Next token
+
+      while ((token.type !== 'paren') || (token.type === 'paren' && token.value !== ')')) {
+        node.params.push(walk());
+        token = tokens[current]; // Because token is inside the closure and we have to take it outside
+      }
+
+      current++;
+      return node;
+
+    }
+    throw new TypeError(token.type);
+    
+  }
+
+  let ast = {
+    type: 'Program',
+    body: [],
+  };
+
+  while (current < tokens.length) {
+    ast.body.push(walk());
+  }
+
+  return ast;
+}
 
 module.exports = {
-  tokenizer
+  tokenizer,
+  parseToken
 };
