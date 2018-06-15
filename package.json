@@ -1,0 +1,9 @@
+{
+  "name": "TheLisp",
+  "version": "0.0.1",
+  "description": "A Lisp Compiler",
+  "main": "index.js",
+  "author": "Oscar",
+  "license": "MIT",
+  "private": true
+}
